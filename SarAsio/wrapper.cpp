@@ -167,8 +167,8 @@ AsioStatus SarAsioWrapper::getBufferSize(
 
     // If we can't effectively limit the sample rate, give up and force the
     // minimum buffer size to be used.
-    if (*minSize > maxBufferSize || !*granularity) {
-        *minSize = *preferredSize = *maxSize;
+    if (*minSize > maxBufferSize) {
+        *minSize = *maxSize = *preferredSize = maxBufferSize;
         *granularity = 0;
         return AsioStatus::OK;
     }
@@ -396,8 +396,9 @@ AsioStatus SarAsioWrapper::createBuffers(
     }
 
     // See comment in SarAsioWrapper::getBufferSize for details.
-    if (bufferSize > (long)(sampleRate / 100.0)) {
-        LOG(ERROR) << "Invalid buffer size: larger than system audio engine periodicity";
+    long maxBufferSize = (long)(sampleRate / 100.0);
+    if (bufferSize > maxBufferSize) {
+        LOG(ERROR) << "Invalid buffer size: larger than system audio engine periodicity (" << maxBufferSize << ")";
         return AsioStatus::InvalidMode;
     }
 
